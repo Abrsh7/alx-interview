@@ -1,25 +1,29 @@
+#!/usr/bin/python3
+"""UTF-8 Validation"""
+
+
 def validUTF8(data):
-    # Number of bytes expected for the next character
-    num_bytes = 0
+    """
+    method that determines if a given data set
+    represents a valid UTF-8 encoding
+    """
+    nbytes = 0
 
-    for byte in data:
-        # Check if the byte is a continuation byte (starts with "10")
-        if num_bytes == 0:
-            if byte >> 5 == 0b110:
-                num_bytes = 1
-            elif byte >> 4 == 0b1110:
-                num_bytes = 2
-            elif byte >> 3 == 0b11110:
-                num_bytes = 3
-            elif byte >> 7 == 0b0:
-                continue  # Single-byte character, move to the next byte
-            else:
-                return False  # Invalid sequence
+    b1 = 1 << 7
+    b2 = 1 << 6
+
+    for i in data:
+        b = 1 << 7
+        if nbytes == 0:
+            while b & i:
+                nbytes += 1
+                b = b >> 1
+            if nbytes == 0:
+                continue
+            if nbytes == 1 or nbytes > 4:
+                return False
         else:
-            # Check if the byte is a continuation byte (starts with "10")
-            if byte >> 6 != 0b10:
-                return False  # Invalid sequence
-            num_bytes -= 1
-
-    return num_bytes == 0  
-
+            if not (i & b1 and not (i & b2)):
+                return False
+        nbytes -= 1
+    return nbytes == 0
